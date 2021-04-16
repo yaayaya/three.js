@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+
+
+    <canvas id="c"></canvas>
+</body>
+
+</html>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r78/three.min.js"></script>
+
+<script>
+    function main() {
+        // Canvas 設置
+        const canvas = document.querySelector('#c');
+        const renderer = new THREE.WebGLRenderer({
+            canvas
+        });
+
+        // Camera 設置
+        const fov = 75;
+        const aspect = 2; // 畫布長寬比  300x150  = 300/150 = 2  the canvas default
+        const near = 0.1; // 可視範圍 (近)
+        const far = 5; // 可視範圍 (遠)  (field of view)
+        const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+        camera.position.z = 2;
+
+        // 創建場景
+        const scene = new THREE.Scene();
+
+        // 創建正方體
+        const boxWidth = 1;
+        const boxHeight = 1;
+        const boxDepth = 1;
+        const geometry = new THREE.BoxGeometry(boxWidth, boxHeight, boxDepth);
+
+        // 創建實例物件 Function
+        function makeInstance(geometry, color, x) {
+            const material = new THREE.MeshPhongMaterial({
+                color
+            });
+
+            const cube = new THREE.Mesh(geometry, material);
+            scene.add(cube);
+            cube.position.x = x;
+            return cube;
+        }
+
+        // 使用Function 創建方塊
+        const cubes = [
+            makeInstance(geometry, 0x44aa88, 0),
+            makeInstance(geometry, 0x8844aa, -2),
+            makeInstance(geometry, 0xaa8844, 2),
+        ];
+
+        // 材質 可受光影響 MeshPhongMaterial   不可被光影響 MeshBasicMaterial
+        const material = new THREE.MeshPhongMaterial({
+            color: 0x44aa88
+        }); // greenish blue
+
+        // 將正方體製作出來加入至場景中
+        const cube = new THREE.Mesh(geometry, material);
+
+        scene.add(cube);
+
+        // 新增光線
+        const color = 0xFFFFFF;
+        const intensity = 1;
+        const light = new THREE.DirectionalLight(color, intensity);
+        // 設置為左上角
+        light.position.set(-1, 2, 4);
+        scene.add(light);
+
+        // 進行Render 
+        function render(time) {
+            // time = 經歷時間 (毫秒)
+            time *= 0.001; // 轉換Time為秒數
+
+            // 調整方塊每幀設置
+            cubes.forEach((cube, i) => {
+                console.log(i)
+                const speed = 1 + i * 1;
+                const rot = time * speed;
+                cube.rotation.x = rot;
+                cube.rotation.y = rot;
+            });
+            cube.rotation.x = time;
+            cube.rotation.y = time;
+
+            // render 場景、相機
+            renderer.render(scene, camera);
+
+            requestAnimationFrame(render);
+        }
+
+        // 設置每幀執行
+        requestAnimationFrame(render);
+
+    }
+
+    main();
+</script>
+
+<style>
+    html,
+    body {
+        margin: 0;
+        height: 100%;
+    }
+
+    #c {
+        width: 100%;
+        height: 100%;
+        display: block;
+    }
+</style>
