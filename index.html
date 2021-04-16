@@ -37,7 +37,7 @@
         // 創建場景
         const scene = new THREE.Scene();
 
-        // 創建正方體
+        // 創建立方體形狀幾何
         const boxWidth = 1;
         const boxHeight = 1;
         const boxDepth = 1;
@@ -62,6 +62,33 @@
             makeInstance(geometry, 0xaa8844, 2),
         ];
 
+        // 判斷解析度是否跟顯示尺寸一致
+        // function resizeRendererToDisplaySize(renderer) {
+        //     const canvas = renderer.domElement;
+        //     const width = canvas.clientWidth;
+        //     const height = canvas.clientHeight;
+        //     const needResize = canvas.width !== width || canvas.height !== height;
+        //     if (needResize) {
+        //         renderer.setSize(width, height, false);
+        //     }
+        //     return needResize;
+        // }
+
+        
+        // 判斷解析度是否跟顯示尺寸一致  應對HD-DPI顯示器
+        function resizeRendererToDisplaySize(renderer) {
+            const canvas = renderer.domElement;
+            const pixelRatio = window.devicePixelRatio;
+            const width = canvas.clientWidth * pixelRatio | 0;
+            const height = canvas.clientHeight * pixelRatio | 0;
+            const needResize = canvas.width !== width || canvas.height !== height;
+            if (needResize) {
+                renderer.setSize(width, height, false);
+            }
+            return needResize;
+        }
+
+
         // 材質 可受光影響 MeshPhongMaterial   不可被光影響 MeshBasicMaterial
         const material = new THREE.MeshPhongMaterial({
             color: 0x44aa88
@@ -69,8 +96,8 @@
 
         // 將正方體製作出來加入至場景中
         const cube = new THREE.Mesh(geometry, material);
-
         scene.add(cube);
+
 
         // 新增光線
         const color = 0xFFFFFF;
@@ -80,14 +107,23 @@
         light.position.set(-1, 2, 4);
         scene.add(light);
 
+
+
+
         // 進行Render 
         function render(time) {
             // time = 經歷時間 (毫秒)
             time *= 0.001; // 轉換Time為秒數
 
+            // 修正Camera長寬比  防止物件變形
+            if (resizeRendererToDisplaySize(renderer)) {
+                const canvas = renderer.domElement;
+                camera.aspect = canvas.clientWidth / canvas.clientHeight;
+                camera.updateProjectionMatrix();
+            }
+
             // 調整方塊每幀設置
             cubes.forEach((cube, i) => {
-                console.log(i)
                 const speed = 1 + i * 1;
                 const rot = time * speed;
                 cube.rotation.x = rot;
